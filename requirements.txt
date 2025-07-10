@@ -1,0 +1,11 @@
+fastapi
+uvicorn[standard]
+pydantic
+python-dotenv
+SQLAlchemy
+psycopg2-binary
+xgboost
+lightgbm
+scikit-learn
+joblib
+numpy
