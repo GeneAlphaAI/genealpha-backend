@@ -1,20 +1,23 @@
-from pydantic_settings import BaseSettings
 from pydantic import Field
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
-    # Database
-    DATABASE_URL: str = Field(..., env="DATABASE_URL")
+    # 1) Tell Pydantic where to load your .env
+    model_config = SettingsConfigDict(
+        env_file='.env',
+        env_file_encoding='utf-8',
+        extra='ignore', 
+    )
 
-    # Model paths
-    XGB_MODEL_PATH: str = Field("models/xgb_model.json", env="XGB_MODEL_PATH")
-    LGB_MODEL_PATH: str = Field("models/lgb_model.txt", env="LGB_MODEL_PATH")
-    RF_MODEL_PATH: str = Field("models/rf_model.joblib", env="RF_MODEL_PATH")
+    # 2) Map each Python attribute to the actual ENV var name via alias
+    USER_NAME: str = Field(..., alias='POSTGRES_USER')
+    PASSWORD:  str = Field(..., alias='POSTGRES_PASSWORD')
+    DB_NAME:   str = Field(..., alias='POSTGRES_DB')
 
-    # Feature settings
-    FEATURE_DIM: int = Field(10, env="FEATURE_DIM")
-
-    class Config:
-        env_file = ".env"
-        env_file_encoding = "utf-8"
+    # (your other settings...)
+    XGB_MODEL_PATH: str = Field('models/xgb_model.json', alias='XGB_MODEL_PATH')
+    LGB_MODEL_PATH: str = Field('models/lgbm_model.txt', alias='LGB_MODEL_PATH')
+    RF_MODEL_PATH:  str = Field('models/rf_model.joblib', alias='RF_MODEL_PATH')
+    FEATURE_DIM:    int = Field(10, alias='FEATURE_DIM')
 
 settings = Settings()
