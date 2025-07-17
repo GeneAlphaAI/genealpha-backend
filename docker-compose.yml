@@ -3,7 +3,7 @@ services:
   app:
     build: .
     container_name: gene-alpha
-    restart: always  # <-- Add this line
+    restart: always  
     ports:
       - "8000:8000"
     volumes:
