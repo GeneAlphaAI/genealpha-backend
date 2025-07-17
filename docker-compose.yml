@@ -1,0 +1,28 @@
+version: '3.8'
+services:
+  app:
+    build: .
+    container_name: gene-alpha
+    restart: always  # <-- Add this line
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+      - ./models:/custom/path
+
+  db:
+    image: postgres:15
+    container_name: gene-db
+    restart: always
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5435:5432"
+
+volumes:
+  pgdata:
+
