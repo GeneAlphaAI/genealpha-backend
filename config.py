@@ -14,6 +14,7 @@ class Settings(BaseSettings):
     PASSWORD:  str = Field(..., alias='POSTGRES_PASSWORD')
     DB_NAME:   str = Field(..., alias='POSTGRES_DB')
     HOST:      str = Field(..., alias='HOST')
+    FEATURES_URL: str = Field(..., alias='FEATURES_URL')
 
     # (your other settings...)
     XGB_MODEL_PATH: str = Field('models/xgb_model.json', alias='XGB_MODEL_PATH')
