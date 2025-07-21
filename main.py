@@ -1,4 +1,5 @@
 from fastapi import FastAPI, HTTPException, Depends
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 import numpy as np
@@ -15,6 +16,21 @@ from model_loader import load_xgb, load_lgb, load_rf
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
+
+# ---- CORS setup ----------------------------------------------------
+origins = [
+    "http://localhost:5180",        # local front-end during dev
+    "https://hive.genealpha.ai",    # production front-end (HTTPS)
+    "http://hive.genealpha.ai",     # non-TLS fallback if ever needed
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,    
+    allow_methods=["POST", "GET", "OPTIONS"],
+    allow_headers=["*"],
+    allow_credentials=True,
+)
 
 # Load models once
 # xgb_model = load_xgb()
