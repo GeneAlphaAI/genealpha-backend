@@ -59,7 +59,7 @@ def fetch_features(address: str, base_url: str) -> dict:
 
     try:
         logger.info(f"Fetching transaction summary for address: {address}")
-        response = requests.get(url, params=params, timeout=10)
+        response = requests.get(url, params=params, timeout=200)
         response.raise_for_status()
         data = response.json().get("data", [])
         if not data:
