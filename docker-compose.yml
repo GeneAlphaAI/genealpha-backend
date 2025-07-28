@@ -1,8 +1,8 @@
 version: '3.8'
 services:
-  app:
+  genealpha-backend:
     build: .
-    container_name: gene-alpha
+    container_name: genealpha-backend
     restart: always  
     ports:
       - "8000:8000"
@@ -10,7 +10,7 @@ services:
       - .:/app
       - ./models:/custom/path
 
-  db:
+  gene-db:
     image: postgres:15
     container_name: gene-db
     restart: always
@@ -25,4 +25,3 @@ services:
 
 volumes:
   pgdata:
-
