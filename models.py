@@ -12,4 +12,4 @@ class Prediction(Base):
     xgboost = Column(Float)
     lightgbm = Column(Float)
     random_forest = Column(Float)
-    ensemble = Column(Float)
+    ensemble  = Column(Float, nullable=True)
