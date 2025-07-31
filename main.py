@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 import numpy as np
 import datetime
 import requests
+from typing import List
 
 from config import settings
 from db import get_db, Base, engine
@@ -33,7 +34,7 @@ app.add_middleware(
 )
 
 # Load models once
-# xgb_model = load_xgb()
+xgb_model = load_xgb()
 lgb_model = load_lgb()
 rf_model  = load_rf()
 
@@ -46,6 +47,36 @@ TOKEN_HASHES = {
 
 class PredictRequest(BaseModel):
     token: str
+
+# GA ensemble weights 
+W_LGB = 0.03481432
+W_RF  = 0.96518568
+
+def compute_ensemble(
+    logs: List[float],
+    weights: List[float],
+    latest_price: float
+) -> float:
+    """
+    Compute a weighted-ensemble prediction from any number of log-predictions.
+
+    Args:
+      logs:         [log_pred1, log_pred2, ...]
+      weights:      [w1, w2, ...]  (doesn't need to sum to 1)
+      latest_price: the base price to exponentiate against
+
+    Returns:
+      ensemble_price = latest_price * exp( sum_i (normalized_wi * log_i) )
+    """
+    if len(logs) != len(weights):
+        raise ValueError("logs and weights must be same length")
+    total_w = sum(weights)
+    if total_w == 0:
+        raise ValueError("sum of weights must be non-zero")
+    # normalize
+    norm = [w / total_w for w in weights]
+    ensemble_log = sum(w * log for w, log in zip(norm, logs))
+    return latest_price * np.exp(ensemble_log)
 
 
 def fetch_features(address: str, base_url: str) -> dict:
@@ -137,6 +168,12 @@ async def predict(req: PredictRequest,
     lgb_price = features_dict["latest_price"] * np.exp(lgb_log)
     rf_price  = features_dict["latest_price"] * np.exp(rf_log)
 
+    # GA - Ensamble prediction
+    latest_price = features_dict["latest_price"]
+    logs    = [lgb_log, rf_log]
+    weights = [W_LGB, W_RF]   # you can append more if you add models later
+    ensemble_price = compute_ensemble(logs, weights, latest_price)
+
     # Persist
     record = Prediction(
         token=token,
@@ -145,6 +182,7 @@ async def predict(req: PredictRequest,
         xgboost=float(0),
         lightgbm=float(lgb_price),
         random_forest=float(rf_price),
+        ensemble=float(ensemble_price)
     )
     db.add(record)
     db.commit()
@@ -157,6 +195,7 @@ async def predict(req: PredictRequest,
             # "xgboost": xgb_price,
             "lightgbm": lgb_price,
             "random_forest": rf_price,
+            "ensemble": ensemble_price
         }
     }
 
